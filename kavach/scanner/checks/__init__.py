@@ -1,0 +1,1 @@
+"""Individual passive security checks."""

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kavach | Free Website Security Health Check</title>
+<meta name="description" content="Get a free security score for your website in about a minute: SSL, security headers, email protection and exposed files.">
+<style>
+  :root{
+    --bg:#0e0e10; --panel:#17171a; --line:#2a2a2f; --text:#f2f0ea; --muted:#a6a39a;
+    --gold:#d4af37; --gold-ink:#1a1500; --high:#ef5350; --med:#f5a524; --low:#6aa9ff; --ok:#3ecf8e;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#faf8f3; --panel:#ffffff; --line:#e4dfd2; --text:#1b1a17; --muted:#6a665b;
+      --gold:#a07d10; --gold-ink:#ffffff; --high:#c62828; --med:#b26a00; --low:#1d5fbf; --ok:#17794f;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px 64px}
+  header{padding:28px 0 8px;display:flex;align-items:center;gap:10px}
+  .brand{font-weight:700;letter-spacing:.02em}
+  .brand span{color:var(--gold)}
+  h1{font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15;margin:28px 0 10px}
+  h1 em{font-style:normal;color:var(--gold)}
+  .lead{color:var(--muted);margin:0 0 24px;max-width:56ch}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+  label{display:block;font-weight:600;margin-bottom:6px}
+  input[type=text],input[type=email]{
+    width:100%;padding:13px 14px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg);color:var(--text);font:inherit}
+  input:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1 1 220px}
+  .check{display:flex;gap:10px;align-items:flex-start;margin:14px 0;color:var(--muted);font-size:.92rem}
+  .check input{margin-top:4px;accent-color:var(--gold)}
+  button{
+    background:var(--gold);color:var(--gold-ink);border:0;border-radius:10px;padding:13px 20px;
+    font:inherit;font-weight:700;cursor:pointer;width:100%}
+  button[disabled]{opacity:.6;cursor:wait}
+  button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);width:auto}
+  .err{color:var(--high);margin:10px 0 0;min-height:1.2em}
+  .loading{display:none;text-align:center;padding:30px 0;color:var(--muted)}
+  .spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--gold);
+    border-radius:50%;margin:0 auto 12px;animation:r 0.9s linear infinite}
+  @keyframes r{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+  #result{display:none;margin-top:28px}
+  .scorebox{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .ring{width:118px;height:118px;border-radius:50%;display:grid;place-items:center;flex:none;
+    background:conic-gradient(var(--c,var(--gold)) calc(var(--p,0)*1%), var(--line) 0)}
+  .ring div{width:92px;height:92px;border-radius:50%;background:var(--panel);display:grid;place-items:center;text-align:center}
+  .ring b{font-size:2rem;line-height:1}
+  .ring small{color:var(--muted);display:block;font-size:.75rem}
+  .counts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .pill{border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.85rem}
+  .pill.high{color:var(--high)} .pill.medium{color:var(--med)} .pill.low{color:var(--low)} .pill.ok{color:var(--ok)}
+  .findings{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:12px}
+  .f{border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:14px;background:var(--panel)}
+  .f.high{border-left-color:var(--high)} .f.medium{border-left-color:var(--med)}
+  .f.low{border-left-color:var(--low)} .f.pass{border-left-color:var(--ok)}
+  .f h3{margin:0 0 4px;font-size:1rem}
+  .tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+  .f p{margin:4px 0;color:var(--muted);font-size:.93rem}
+  .f .fix{color:var(--text)}
+  .gate h2{margin:0 0 6px;font-size:1.2rem}
+  .gate p{color:var(--muted);margin:0 0 14px}
+  .gate .row{margin-bottom:10px}
+  .foot{margin-top:40px;color:var(--muted);font-size:.85rem}
+  .noprint{}
+  @media print{
+    body{background:#fff;color:#000} .noprint,header .tag{display:none!important}
+    .card,.f{border-color:#bbb;background:#fff;color:#000}.f p{color:#333}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="brand">KAV<span>ACH</span></div><div class="tag" style="margin:0 0 0 4px">by Tech Silicon</div></header>
+
+  <h1>How secure is your website? <em>Find out in 60 seconds.</em></h1>
+  <p class="lead">A free health check for SSL, security headers, email protection and exposed files. It only reads what is already public. Nothing on your site is changed.</p>
+
+  <form id="scanForm" class="card noprint" novalidate>
+    <label for="domain">Your website</label>
+    <input id="domain" type="text" inputmode="url" autocomplete="url" placeholder="example.com" maxlength="300" required>
+    <label class="check"><input id="consent" type="checkbox">
+      <span>I own this website or have permission to check it.</span></label>
+    <button id="go" type="submit">Check my website</button>
+    <p class="err" id="err" role="alert"></p>
+  </form>
+
+  <div class="loading" id="loading" role="status"><div class="spin"></div>Checking your website. This takes about a minute.</div>
+
+  <section id="result" aria-live="polite">
+    <div class="card">
+      <div class="scorebox">
+        <div class="ring" id="ring"><div><span><b id="score">0</b><small>out of 100</small></span></div></div>
+        <div>
+          <div class="tag">Security health of</div>
+          <h2 id="host" style="margin:0 0 2px;word-break:break-all"></h2>
+          <div>Grade <b id="grade"></b></div>
+          <div class="counts" id="counts"></div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="findings" id="findings"></ul>
+
+    <div class="card gate noprint" id="gate" style="margin-top:18px">
+      <h2 id="gateTitle">Get your full report</h2>
+      <p>See every check, with step-by-step fixes. Enter your details and we will also email you tips for your website.</p>
+      <form id="leadForm" novalidate>
+        <div class="row">
+          <input id="name" type="text" placeholder="Your name" autocomplete="name" maxlength="120" aria-label="Your name">
+          <input id="company" type="text" placeholder="Company" autocomplete="organization" maxlength="160" aria-label="Company">
+        </div>
+        <div class="row">
+          <input id="email" type="email" placeholder="Work email" autocomplete="email" maxlength="200" required aria-label="Work email">
+        </div>
+        <button type="submit" id="leadBtn">Show full report</button>
+        <p class="err" id="leadErr" role="alert"></p>
+      </form>
+    </div>
+
+    <div class="noprint" id="after" style="display:none;margin-top:18px">
+      <div class="row">
+        <button class="ghost" id="printBtn" type="button">Save as PDF / Print</button>
+        <button class="ghost" id="againBtn" type="button">Check another website</button>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <b>Want help fixing these issues?</b>
+        <p style="margin:6px 0 0;color:var(--muted)">Tech Silicon's cybersecurity team can fix them and test your site more deeply. Reply to the email we sent you, or write to <a href="mailto:karthik@techsilicon.com" style="color:var(--gold)">karthik@techsilicon.com</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">This is a basic, passive health check. It is not a full security audit or penetration test, and a good score does not mean a site is free of vulnerabilities.</p>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){return document.getElementById(id)};
+  var scanId = null;
+
+  function api(path, payload){
+    return fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)})
+      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error || "Something went wrong."); return j; }); });
+  }
+
+  // Everything coming from the scan is rendered with textContent, never innerHTML,
+  // because header values and error text originate from the scanned site.
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(text != null) e.textContent = text;
+    return e;
+  }
+
+  function render(d){
+    scanId = d.scan_id;
+    $("host").textContent = d.domain;
+    $("score").textContent = d.score;
+    $("grade").textContent = d.grade;
+    var color = d.score >= 75 ? "var(--ok)" : d.score >= 50 ? "var(--med)" : "var(--high)";
+    $("ring").style.setProperty("--p", d.score);
+    $("ring").style.setProperty("--c", color);
+
+    var counts = $("counts"); counts.textContent = "";
+    [["high","high"],["medium","medium"],["low","low"]].forEach(function(p){
+      var n = d.summary[p[0]];
+      if(n) counts.appendChild(el("span","pill "+p[1], n+" "+p[0]));
+    });
+    counts.appendChild(el("span","pill ok", d.summary.passed+" passed"));
+
+    var ul = $("findings"); ul.textContent = "";
+    d.findings.forEach(function(f){
+      var li = el("li","f "+(f.passed ? "pass" : f.severity));
+      li.appendChild(el("div","tag", f.category + (f.passed ? " - passed" : " - " + f.severity)));
+      li.appendChild(el("h3",null,f.title));
+      if(f.detail) li.appendChild(el("p",null,f.detail));
+      if(f.fix){ var p = el("p","fix"); p.appendChild(el("b",null,"How to fix: ")); p.appendChild(document.createTextNode(f.fix)); li.appendChild(p); }
+      ul.appendChild(li);
+    });
+    if(!d.full && d.hidden_count > 0){
+      $("gateTitle").textContent = "Unlock " + d.hidden_count + " more checks and all fixes";
+    }
+    $("gate").style.display = d.full ? "none" : "block";
+    $("after").style.display = d.full ? "block" : "none";
+    $("result").style.display = "block";
+    $("result").scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  $("scanForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    $("err").textContent = "";
+    var domain = $("domain").value.trim();
+    if(!domain){ $("err").textContent = "Please enter your website address."; return; }
+    if(!$("consent").checked){ $("err").textContent = "Please confirm you own this website or have permission to check it."; return; }
+    $("go").disabled = true; $("result").style.display = "none"; $("loading").style.display = "block";
+    api("/api/scan", {domain:domain, consent:true})
+      .then(render)
+      .catch(function(ex){ $("err").textContent = ex.message; })
+      .then(function(){ $("go").disabled = false; $("loading").style.display = "none"; });
+  });
+
+  $("leadForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    $("leadErr").textContent = "";
+    var email = $("email").value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)){ $("leadErr").textContent = "Please enter a valid email address."; return; }
+    $("leadBtn").disabled = true;
+    api("/api/lead", {scan_id:scanId, email:email, name:$("name").value, company:$("company").value})
+      .then(render)
+      .catch(function(ex){ $("leadErr").textContent = ex.message; })
+      .then(function(){ $("leadBtn").disabled = false; });
+  });
+
+  $("printBtn").addEventListener("click", function(){ window.print(); });
+  $("againBtn").addEventListener("click", function(){
+    $("result").style.display = "none"; $("domain").value = ""; $("consent").checked = false;
+    window.scrollTo({top:0, behavior:"smooth"}); $("domain").focus();
+  });
+})();
+</script>
+</body>
+</html>
